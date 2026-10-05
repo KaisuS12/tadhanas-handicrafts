@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useShopData } from './shopData.jsx'
 
 const CART_KEY = 'tadhana-cart'
 const RECEIPT_KEY = 'tadhana-receipt'
@@ -40,6 +41,32 @@ export function CartProvider({ children }) {
 
   useEffect(() => save(CART_KEY, cart), [cart])
   useEffect(() => save(RECEIPT_KEY, receipt), [receipt])
+
+  // A saved order may hold things that went out of stock since the last visit.
+  // Once the real shop data has loaded, drop those and tell the customer.
+  const shop = useShopData()
+  const [removed, setRemoved] = useState([]) // names of items taken out
+  useEffect(() => {
+    if (shop.loading) return
+    setCart((c) => {
+      const gone = []
+      const items = c.items.filter((i) => {
+        const ok =
+          i.kind === 'bouquet'
+            ? shop.bouquets.some((b) => b.id === i.refId)
+            : shop.flowers.some((f) => f.id === i.refId && (!i.color || (f.colors ?? []).includes(i.color)))
+        if (!ok) gone.push(i.color ? `${i.name} (${i.color})` : i.name)
+        return ok
+      })
+      const wrapperOk = !c.wrapperId || shop.wrappers.some((w) => w.id === c.wrapperId)
+      const addOnIds = c.addOnIds.filter((id) => shop.addOns.some((a) => a.id === id))
+      if (!wrapperOk) gone.push('your chosen wrap')
+      if (addOnIds.length !== c.addOnIds.length) gone.push('an extra')
+      if (gone.length === 0) return c
+      setRemoved(gone)
+      return { ...c, items, wrapperId: wrapperOk ? c.wrapperId : '', addOnIds }
+    })
+  }, [shop.loading, shop.bouquets, shop.flowers, shop.wrappers, shop.addOns])
 
   const update = (patch) => setCart((c) => ({ ...c, ...(typeof patch === 'function' ? patch(c) : patch) }))
 
@@ -108,7 +135,9 @@ export function CartProvider({ children }) {
 
   const count = cart.items.reduce((sum, i) => sum + i.qty, 0)
 
-  return <CartContext.Provider value={{ cart, receipt, count, ...actions }}>{children}</CartContext.Provider>
+  const dismissRemoved = () => setRemoved([])
+
+  return <CartContext.Provider value={{ cart, receipt, count, removed, dismissRemoved, ...actions }}>{children}</CartContext.Provider>
 }
 
 export const useCart = () => useContext(CartContext)

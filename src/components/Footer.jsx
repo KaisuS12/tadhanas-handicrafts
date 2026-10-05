@@ -18,9 +18,6 @@ export default function Footer() {
             {settings.facebook_url && ' · '}
             <a href={messengerUrl(settings)} target="_blank" rel="noreferrer">Messenger</a>
           </p>
-          <p>
-            <a href="#/admin" className="footer-admin">Shop admin</a>
-          </p>
         </div>
       </div>
     </footer>

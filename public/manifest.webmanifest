@@ -1,0 +1,15 @@
+{
+  "name": "Tadhana's Handicrafts",
+  "short_name": "Tadhana's",
+  "description": "Handmade bouquets. Build your own and send your order on Messenger.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdf8f5",
+  "theme_color": "#fdf8f5",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

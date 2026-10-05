@@ -1,7 +1,7 @@
 // One data API for the whole app:
 //  - 'supabase' mode when the .env keys are set (real, shared by all visitors)
 //  - 'local' test mode otherwise: data lives in this browser only
-import { supabase, uploadPhoto as uploadToSupabase } from './supabase.js'
+import { supabase, uploadPhotoPair } from './supabase.js'
 import * as seed from '../data/shop.js'
 
 export const mode = supabase ? 'supabase' : 'local'
@@ -100,9 +100,9 @@ export async function loadAll() {
 // Test mode stores them in the browser (smaller); Supabase gets a sharper version.
 export async function uploadPhoto(file, folder) {
   if (mode === 'supabase') {
-    const blob = await shrinkImage(file, 1400, 0.85)
-    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
-    return uploadToSupabase(new File([blob], name, { type: 'image/jpeg' }), folder)
+    // Full size for the zoomed view, a small copy for cards (saves free-plan bandwidth)
+    const [full, thumb] = await Promise.all([shrinkImage(file, 1400, 0.85), shrinkImage(file, 480, 0.78)])
+    return uploadPhotoPair(full, thumb, folder, file.name)
   }
   const blob = await shrinkImage(file, 600, 0.8)
   return new Promise((resolve) => {

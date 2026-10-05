@@ -112,7 +112,7 @@ export default function Home({ notify }) {
         <div className="lightbox" onClick={() => setZoomed(null)} role="dialog" aria-modal="true" aria-label={zoomed.name}>
           <div className="lightbox-inner" onClick={(e) => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setZoomed(null)} aria-label="Close">×</button>
-            <Photo src={zoomed.image_url} emoji={zoomed.emoji} seed={zoomed.id} alt={zoomed.name} className="lightbox-photo" />
+            <Photo src={zoomed.image_url} emoji={zoomed.emoji} seed={zoomed.id} alt={zoomed.name} className="lightbox-photo" full />
             <div className="lightbox-caption">
               <strong>{zoomed.code && <span className="code-inline">#{zoomed.code}</span>} {zoomed.name}</strong>
               {zoomed.description && <p className="muted small lightbox-desc">{zoomed.description}</p>}

@@ -216,7 +216,6 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 .stock-switch.on { background: var(--green-soft); color: var(--green); border-color: #cfe2d3; }
 .stock-switch.on .stock-knob { background: var(--green); }
 .stock-switch.on .stock-knob::after { transform: translateX(10px); }
-.footer-admin { color: var(--muted); font-size: 0.8rem; }
 
 /* ---------- Bouquet showcase ---------- */
 .photo-btn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
@@ -600,3 +599,6 @@ body.no-scroll { overflow: hidden; }
   .adm-savebar span { margin-right: auto; }
   .adm-savebar.show { transform: none; }
 }
+
+/* Saved order lost something that went out of stock */
+.stock-notice { display: flex; align-items: flex-start; gap: 0.5rem; background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 0.5rem 0.4rem 0.5rem 0.75rem; font-size: 0.88rem; margin-bottom: 0.5rem; }

@@ -1,0 +1,27 @@
+# Free Supabase projects pause after 7 days without activity.
+# This pings the database every 3 days so the shop never goes to sleep.
+# Needs two repository secrets: SUPABASE_URL and SUPABASE_ANON_KEY
+# (GitHub → Settings → Secrets and variables → Actions → New repository secret).
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: '0 1 */3 * *' # every 3 days at 01:00 UTC (09:00 PH time)
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the shop database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Add the SUPABASE_URL and SUPABASE_ANON_KEY secrets first."; exit 1
+          fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/settings?select=name" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Supabase answered: $status"
+          [ "$status" = "200" ]

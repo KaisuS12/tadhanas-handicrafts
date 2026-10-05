@@ -47,6 +47,12 @@ export default function CartPanel() {
 
         <div className="cart-body">
           <h3 className="cart-title">My bouquet</h3>
+          {cart.removed.length > 0 && (
+            <p className="stock-notice" role="status">
+              Sorry, {new Intl.ListFormat('en').format(cart.removed)} {cart.removed.length > 1 ? 'are' : 'is'} no longer available, so we took {cart.removed.length > 1 ? 'them' : 'it'} out of your bouquet.
+              <button className="icon-btn" onClick={cart.dismissRemoved} aria-label="Dismiss">×</button>
+            </p>
+          )}
           {basedOn && (
             <p className="based-on">
               ✏️ Based on {basedOn.code && <strong>#{basedOn.code}</strong>} {basedOn.name}
