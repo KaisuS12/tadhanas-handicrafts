@@ -3,6 +3,8 @@ import { selectAll, insertRow, updateRow, deleteRow, uploadPhoto } from '../../l
 import useLockScroll from '../../lib/useLockScroll.js'
 import Photo from '../../components/Photo.jsx'
 import RecipeEditor from './RecipeEditor.jsx'
+import { hasPrice, peso } from '../../lib/money.js'
+import { friendlyError } from '../../lib/errors.js'
 
 // Manages one table: searchable cards/rows plus a side-panel editor.
 // where: only show rows matching these values (e.g. { type: 'filler' }); new rows get them too.
@@ -39,6 +41,8 @@ export default function CrudTable({ table, where = {}, fields, itemLabel, autoCo
     })
   }, [load, newRow])
 
+  const [saveError, setSaveError] = useState('') // shown inside the editor panel
+
   async function run(action, message) {
     setBusy(true)
     try {
@@ -48,8 +52,8 @@ export default function CrudTable({ table, where = {}, fields, itemLabel, autoCo
       notify(message)
       return true
     } catch (err) {
-      notify('Something went wrong: ' + err.message)
-      return false
+      notify(friendlyError(err))
+      return err
     } finally {
       setBusy(false)
     }
@@ -59,11 +63,13 @@ export default function CrudTable({ table, where = {}, fields, itemLabel, autoCo
     const { id, ...values } = row
     if (autoCode && !values.code?.trim()) values.code = nextCode(rows, autoCode)
     const nextSort = Math.max(0, ...rows.map((r) => r.sort ?? 0)) + 1
-    const ok = await run(
+    setSaveError('')
+    const result = await run(
       () => (id ? updateRow(table, id, values) : insertRow(table, { ...values, ...where, sort: nextSort })),
       `${values.name} saved ✓`,
     )
-    if (ok) setEditing(null)
+    if (result === true) setEditing(null)
+    else setSaveError(friendlyError(result))
   }
 
   async function remove(row) {
@@ -97,7 +103,12 @@ export default function CrudTable({ table, where = {}, fields, itemLabel, autoCo
     return [r.name, r.code, r.category, ...(r.colors ?? [])].some((v) => v?.toLowerCase().includes(q))
   })
   const offCount = rows.filter((r) => r.active === false).length
-  const summaryOf = (row) => fields.filter((f) => f.summary).map((f) => [].concat(row[f.name] ?? []).join(', ')).filter(Boolean).join(' · ')
+  const summaryOf = (row) =>
+    fields
+      .filter((f) => f.summary)
+      .map((f) => (f.type === 'price' ? (hasPrice(row[f.name]) ? peso(row[f.name]) : '') : [].concat(row[f.name] ?? []).join(', ')))
+      .filter(Boolean)
+      .join(' · ')
 
   const itemProps = (row) => ({
     row,
@@ -161,7 +172,11 @@ export default function CrudTable({ table, where = {}, fields, itemLabel, autoCo
           busy={busy}
           folder={table}
           notify={notify}
-          onClose={() => setEditing(null)}
+          error={saveError}
+          onClose={() => {
+            setEditing(null)
+            setSaveError('')
+          }}
           onSave={save}
           onDelete={editing.id ? () => remove(editing) : null}
         />
@@ -251,7 +266,8 @@ function ItemRow({ row, summary, stockLabels, busy, onEdit, onToggle, ...menu })
 }
 
 // ---------- Editor panel ----------
-function Drawer({ fields, itemLabel, initial, busy, folder, notify, onClose, onSave, onDelete }) {
+function Drawer({ fields, itemLabel, initial, busy, folder, notify, error, onClose, onSave, onDelete }) {
+  const [formError, setFormError] = useState('')
   const [row, setRow] = useState(initial)
   const [uploading, setUploading] = useState(false)
   const dirty = JSON.stringify(row) !== JSON.stringify(initial)
@@ -291,7 +307,14 @@ function Drawer({ fields, itemLabel, initial, busy, folder, notify, onClose, onS
         className="adm-drawer"
         onSubmit={(e) => {
           e.preventDefault()
+          setFormError('')
           onSave(row)
+        }}
+        onInvalidCapture={(e) => {
+          // The browser stops the save when a required field is empty; say which one
+          const label = e.target.closest('.adm-field')?.querySelector('.adm-label')?.textContent ?? 'the required fields'
+          setFormError(`Please fill in “${label}” first.`)
+          e.target.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
         }}
       >
         <header className="adm-drawer-head">
@@ -313,6 +336,11 @@ function Drawer({ fields, itemLabel, initial, busy, folder, notify, onClose, onS
           )}
         </div>
 
+        {(formError || error) && (
+          <p className="adm-drawer-error" role="alert">
+            {formError || error}
+          </p>
+        )}
         <footer className="adm-drawer-foot">
           {onDelete && (
             <button type="button" className="adm-delete" onClick={onDelete} disabled={busy}>Delete</button>
@@ -366,6 +394,20 @@ function Field({ f, row, set, uploading, upload }) {
     <label className="adm-field">
       <span className="adm-label">{f.label}</span>
       {f.type === 'text' && <input value={value ?? ''} onChange={(e) => set(f.name, e.target.value)} required={f.required} placeholder={f.placeholder} />}
+      {f.type === 'price' && (
+        <span className="adm-price">
+          <span aria-hidden="true">₱</span>
+          <input
+            inputMode="numeric"
+            value={value ?? ''}
+            placeholder="No price shown"
+            onChange={(e) => {
+              const digits = e.target.value.replace(/[^0-9]/g, '')
+              set(f.name, digits ? Number(digits) : null)
+            }}
+          />
+        </span>
+      )}
       {f.type === 'textarea' && <textarea rows={3} value={value ?? ''} onChange={(e) => set(f.name, e.target.value)} placeholder={f.placeholder} />}
       {f.type === 'tags' && <TagInput value={value ?? []} onChange={(v) => set(f.name, v)} placeholder={f.placeholder} />}
       {f.type === 'category' && (

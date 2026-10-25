@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import '../../styles/admin.css'
 import { supabase } from '../../lib/supabase.js'
 import { mode, resetLocal, loadAll } from '../../lib/db.js'
 import { useShopData } from '../../lib/shopData.jsx'
@@ -27,10 +28,11 @@ const SECTIONS = [
     autoCode: 'B',
     layout: 'cards',
     stockLabels: SHOWN,
-    newRow: () => ({ name: '', category: '', description: '', emoji: '💐', image_url: '', wrapper_id: '', recipe: [], active: true }),
+    newRow: () => ({ name: '', price: null, category: '', description: '', emoji: '💐', image_url: '', wrapper_id: '', recipe: [], active: true }),
     fields: [
       photo,
       name('e.g. Classic Red Dozen'),
+      { name: 'price', label: 'Price', type: 'price', summary: true, hint: 'In pesos. Leave blank if you’d rather quote it on Messenger.' },
       { name: 'category', label: 'Category', type: 'category', summary: true, suggestions: ['Birthday', 'Anniversary', 'Graduation', 'Sympathy', 'Just Because'] },
       { name: 'description', label: 'Description', type: 'textarea', placeholder: 'A short line customers will read' },
       { name: 'recipe', label: 'What’s inside', type: 'recipe' },

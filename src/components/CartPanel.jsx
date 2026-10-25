@@ -4,6 +4,8 @@ import { useCart } from '../lib/cart.jsx'
 import { useShopData } from '../lib/shopData.jsx'
 import QuantityStepper from './QuantityStepper.jsx'
 import OrderDetails, { validateDetails } from './OrderDetails.jsx'
+import { hasPrice, peso } from '../lib/money.js'
+import { priceSummary } from '../lib/pricing.js'
 
 // Sticky side panel on desktop, bottom sheet on mobile.
 export default function CartPanel() {
@@ -25,6 +27,8 @@ export default function CartPanel() {
   }
   const [showErrors, setShowErrors] = useState(false)
   const { items, details, basedOn } = cart.cart
+  const priceOf = (i) => (i.kind === 'bouquet' ? shopData.bouquets.find((b) => b.id === i.refId)?.price : null)
+  const prices = priceSummary(items.map((i) => ({ ...i, price: priceOf(i) })))
 
   function placeOrder() {
     if (Object.keys(validateDetails(details)).length > 0) {
@@ -46,7 +50,7 @@ export default function CartPanel() {
         </button>
 
         <div className="cart-body">
-          <h3 className="cart-title">My bouquet</h3>
+          <h3 className="cart-title"><span className="step-num hand">3</span> My order</h3>
           {cart.removed.length > 0 && (
             <p className="stock-notice" role="status">
               Sorry, {new Intl.ListFormat('en').format(cart.removed)} {cart.removed.length > 1 ? 'are' : 'is'} no longer available, so we took {cart.removed.length > 1 ? 'them' : 'it'} out of your bouquet.
@@ -70,6 +74,7 @@ export default function CartPanel() {
                     <strong>{i.name}</strong>
                     {i.color && <span className="muted small"> · {i.color}</span>}
                     {i.kind === 'bouquet' && <span className="chip chip-xs">ready-made</span>}
+                    {hasPrice(priceOf(i)) && <span className="cart-line-price">{peso(priceOf(i) * i.qty)}</span>}
                   </div>
                   <QuantityStepper value={i.qty} onChange={(q) => cart.setQty(i.key, q)} label={i.name} />
                   <button className="icon-btn" onClick={() => cart.remove(i.key)} aria-label={`Remove ${i.name}`}>×</button>
@@ -78,6 +83,13 @@ export default function CartPanel() {
             </ul>
           )}
           <p className="muted small">{cart.count} item{cart.count === 1 ? '' : 's'}</p>
+          {prices.hasPriced && (
+            <div className="cart-total">
+              <span>{prices.hasUnpriced ? 'Bouquets subtotal' : 'Total'}</span>
+              <strong>{peso(prices.total)}</strong>
+            </div>
+          )}
+          {prices.hasPriced && prices.hasUnpriced && <p className="muted small">+ your custom flowers, which we’ll price on Messenger.</p>}
 
           <OrderDetails details={details} onChange={(d) => cart.set({ details: d })} showErrors={showErrors} />
 

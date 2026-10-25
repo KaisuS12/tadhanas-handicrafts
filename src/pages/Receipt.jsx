@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { toBlob } from 'html-to-image'
 import useLockScroll from '../lib/useLockScroll.js'
+import Doodle from '../components/Doodle.jsx'
+import { hasPrice, peso } from '../lib/money.js'
+import { priceSummary } from '../lib/pricing.js'
 import { useCart } from '../lib/cart.jsx'
 import { useShopData } from '../lib/shopData.jsx'
 import { receiptText, messengerUrl, copyText } from '../lib/order.js'
@@ -47,6 +50,7 @@ export default function Receipt({ notify }) {
   }
 
   const created = new Date(receipt.createdAt)
+  const prices = priceSummary(receipt.items)
   const d = receipt.details
 
   const canShare = Boolean(file && navigator.canShare?.({ files: [file] }))
@@ -85,14 +89,15 @@ export default function Receipt({ notify }) {
 
   return (
     <div className="container section receipt-page">
-      <h1 className="page-title center">Almost done! 🎉</h1>
+      <p className="kicker hand center">yay, thank you!</p>
+      <h1 className="page-title center">Almost done 🎉</h1>
       <p className="muted center">Save this receipt and send it to our Facebook page. We’ll reply with the price and payment details.</p>
 
       <div className="receipt" ref={ref}>
         <div className="receipt-head">
-          <div className="receipt-logo">🌷</div>
+          <div className="receipt-logo"><Doodle name="tulip" size={40} /></div>
           <h2>{settings.name}</h2>
-          <p className="muted small">Order receipt</p>
+          <p className="receipt-kind hand">order slip</p>
         </div>
 
         <dl className="receipt-meta">
@@ -102,7 +107,7 @@ export default function Receipt({ notify }) {
 
         <table className="receipt-items">
           <thead>
-            <tr><th>Item</th><th className="qty">Qty</th></tr>
+            <tr><th>Item</th><th className="qty">Qty</th>{prices.hasPriced && <th className="amt">Price</th>}</tr>
           </thead>
           <tbody>
             {receipt.items.map((i, idx) => (
@@ -114,9 +119,18 @@ export default function Receipt({ notify }) {
                   {i.kind === 'bouquet' && <span className="muted small"> (ready-made)</span>}
                 </td>
                 <td className="qty">{i.qty}</td>
+                {prices.hasPriced && <td className="amt">{hasPrice(i.price) ? peso(i.price * i.qty) : <span className="muted">TBC</span>}</td>}
               </tr>
             ))}
           </tbody>
+          {prices.hasPriced && (
+            <tfoot>
+              <tr>
+                <td colSpan={2}>{prices.hasUnpriced ? 'Bouquets subtotal' : 'Total'}</td>
+                <td className="amt">{peso(prices.total)}</td>
+              </tr>
+            </tfoot>
+          )}
         </table>
 
         <dl className="receipt-meta">
@@ -134,7 +148,14 @@ export default function Receipt({ notify }) {
           {d.date && <div><dt>Date needed</dt><dd>{new Date(d.date + 'T00:00').toLocaleDateString('en-PH', { dateStyle: 'medium' })}</dd></div>}
         </dl>
 
-        <p className="receipt-foot">Price to be confirmed by {settings.name} via Messenger.<br />Thank you! 💐</p>
+        <p className="receipt-foot">
+          {!prices.hasPriced
+            ? `Price to be confirmed by ${settings.name} via Messenger.`
+            : prices.hasUnpriced
+              ? `Custom flowers (TBC) will be priced by ${settings.name} via Messenger.`
+              : 'Delivery fee, if any, will be confirmed via Messenger.'}
+          <br />Thank you! 💐
+        </p>
       </div>
 
       <div className="receipt-actions">

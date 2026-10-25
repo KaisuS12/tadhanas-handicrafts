@@ -1,19 +1,27 @@
 import Photo from './Photo.jsx'
+import { hasPrice, peso } from '../lib/money.js'
 
-export default function BouquetCard({ bouquet, inside, inCart, onOrder, onMakeLike, onZoom }) {
+// A tiny bit of hand-placed wobble so the grid doesn't look machine-made
+const TILTS = ['-1.2deg', '0.8deg', '-0.5deg', '1.1deg', '-0.9deg', '0.4deg']
+
+export default function BouquetCard({ bouquet, index = 0, inside, inCart, onOrder, onMakeLike, onZoom }) {
   return (
-    <article className="card bouquet-card">
-      <button className="photo-btn" onClick={onZoom} aria-label={`View ${bouquet.name} larger`}>
+    <article className="bq polaroid reveal" style={{ '--tilt': TILTS[index % TILTS.length] }}>
+      <button className="bq-photo" onClick={onZoom} aria-label={`View ${bouquet.name} larger`}>
+        <span className="tape" aria-hidden="true" />
         <Photo src={bouquet.image_url} emoji={bouquet.emoji} seed={bouquet.id} alt={bouquet.name} />
-        {bouquet.code && <span className="code-badge">#{bouquet.code}</span>}
+        {bouquet.code && <span className="hang-tag">#{bouquet.code}</span>}
       </button>
-      <div className="card-body">
-        {bouquet.category && <span className="chip">{bouquet.category}</span>}
-        <h3>{bouquet.name}</h3>
-        {bouquet.description && <p className="muted">{bouquet.description}</p>}
+      <div className="bq-body">
+        <div className="bq-title">
+          <h3>{bouquet.name}</h3>
+          {hasPrice(bouquet.price) && <span className="bq-price hand">{peso(bouquet.price)}</span>}
+        </div>
+        {bouquet.category && <span className="tag-label tag-sm">{bouquet.category}</span>}
+        {bouquet.description && <p className="bq-desc">{bouquet.description}</p>}
         {inside.length > 0 && (
           <div className="inside">
-            <span className="inside-label">What’s inside</span>
+            <span className="inside-label hand">what’s inside</span>
             <ul>
               {inside.map((i) => (
                 <li key={i.key} className={i.out ? 'out' : ''}>

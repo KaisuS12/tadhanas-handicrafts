@@ -1,3 +1,6 @@
+import { hasPrice, peso } from './money.js'
+import { priceSummary } from './pricing.js'
+
 // Plain-text version of the receipt, for copying into Messenger.
 export function receiptText(receipt, settings) {
   const d = receipt.details
@@ -5,9 +8,11 @@ export function receiptText(receipt, settings) {
     `Hi ${settings.name}! Here's my order 💐`,
     `Order no: ${receipt.orderNo}`,
     '',
-    ...receipt.items.map((i) => `• ${i.qty} × ${i.code ? `#${i.code} ` : ''}${i.name}${i.color ? ` (${i.color})` : ''}${i.kind === 'bouquet' ? ' [ready-made]' : ''}`),
+    ...receipt.items.map((i) => `• ${i.qty} × ${i.code ? `#${i.code} ` : ''}${i.name}${i.color ? ` (${i.color})` : ''}${i.kind === 'bouquet' ? ' [ready-made]' : ''}${hasPrice(i.price) ? ` — ${peso(i.price * i.qty)}` : ''}`),
     '',
   ]
+  const prices = priceSummary(receipt.items)
+  if (prices.hasPriced) lines.push(`${prices.hasUnpriced ? 'Bouquets subtotal' : 'Total'}: ${peso(prices.total)}${prices.hasUnpriced ? ' (+ custom flowers TBC)' : ''}`, '')
   if (receipt.basedOn) lines.push(`Inspired by: ${receipt.basedOn.code ? `#${receipt.basedOn.code} ` : ''}${receipt.basedOn.name}`)
   if (receipt.wrapper) lines.push(`Wrap: ${receipt.wrapper}`)
   if (receipt.addOns.length) lines.push(`Extras: ${receipt.addOns.join(', ')}`)

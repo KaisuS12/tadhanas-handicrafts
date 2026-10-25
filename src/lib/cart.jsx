@@ -120,7 +120,14 @@ export function CartProvider({ children }) {
       const snapshot = {
         orderNo: `TH-${ymd}-${Math.floor(1000 + Math.random() * 9000)}`,
         createdAt: now.toISOString(),
-        items: cart.items.map(({ kind, code, name, color, qty }) => ({ kind, code, name, color, qty })),
+        items: cart.items.map(({ kind, refId, code, name, color, qty }) => ({
+          kind,
+          code,
+          name,
+          color,
+          qty,
+          price: kind === 'bouquet' ? (shopData.bouquets.find((b) => b.id === refId)?.price ?? null) : null,
+        })),
         basedOn: cart.basedOn,
         wrapper: shopData.wrappers.find((w) => w.id === cart.wrapperId)?.name ?? '',
         addOns: shopData.addOns.filter((a) => cart.addOnIds.includes(a.id)).map((a) => a.name),

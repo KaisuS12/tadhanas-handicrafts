@@ -1,5 +1,6 @@
 import { useShopData } from '../lib/shopData.jsx'
 import { useCart } from '../lib/cart.jsx'
+import Doodle from './Doodle.jsx'
 
 export default function Navbar({ route }) {
   const { settings } = useShopData()
@@ -8,12 +9,14 @@ export default function Navbar({ route }) {
     <header className="nav">
       <div className="container nav-inner">
         <a href="#/" className="brand">
-          <span aria-hidden="true">🌷</span> {settings.name}
+          <span className="brand-mark" aria-hidden="true"><Doodle name="tulip" size={26} strokeWidth={2.4} /></span>
+          <span className="brand-name">{settings.name}</span>
         </a>
-        <nav className="nav-links">
+        <nav className="nav-links" aria-label="Main">
           <a href="#/" className={route === 'home' ? 'active' : ''}>Bouquets</a>
-          <a href="#/customize" className={'btn btn-small' + (route === 'customize' ? ' active' : '')}>
-            Customize{count > 0 && <span className="badge">{count}</span>}
+          <a href="#/customize" className={route === 'customize' ? 'active' : ''}>Build your own</a>
+          <a href="#/customize/bag" className="btn btn-small nav-order">
+            My order{count > 0 && <span className="badge">{count}</span>}
           </a>
         </nav>
       </div>

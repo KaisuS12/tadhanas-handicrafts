@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useLockScroll from '../lib/useLockScroll.js'
 import BouquetCard from '../components/BouquetCard.jsx'
 import Photo from '../components/Photo.jsx'
 import { useShopData } from '../lib/shopData.jsx'
 import { useCart } from '../lib/cart.jsx'
+import { hasPrice, peso } from '../lib/money.js'
+import useReveal from '../lib/useReveal.js'
+import Doodle, { Swash } from '../components/Doodle.jsx'
+import OccasionTiles from '../components/home/OccasionTiles.jsx'
+import HowItWorks from '../components/home/HowItWorks.jsx'
+import AboutMaker from '../components/home/AboutMaker.jsx'
 
 export default function Home({ notify }) {
   const shopData = useShopData()
@@ -12,8 +18,18 @@ export default function Home({ notify }) {
   const [category, setCategory] = useState('All')
   const [zoomed, setZoomed] = useState(null)
   useLockScroll(Boolean(zoomed))
+  const pageRef = useRef(null)
+  useReveal(pageRef, [bouquets.length, category])
 
   const categories = [...new Set(bouquets.map((b) => b.category).filter(Boolean))]
+  const counts = Object.fromEntries(categories.map((c) => [c, bouquets.filter((b) => b.category === c).length]))
+  const collage = bouquets.slice(0, 3)
+
+  const scrollToBouquets = () => document.getElementById('bouquets')?.scrollIntoView({ behavior: 'smooth' })
+  function pickOccasion(c) {
+    setCategory(c)
+    scrollToBouquets()
+  }
   const shown = category === 'All' ? bouquets : bouquets.filter((b) => b.category === category)
 
   // Recipe lines with flower names, marking anything that's out of stock
@@ -53,68 +69,99 @@ export default function Home({ notify }) {
     <>
       <section className="hero">
         <div className="container hero-inner">
-          <h1>{settings.tagline}</h1>
-          <p>Browse the bouquets we’ve made. Order one as is, or make one like it in your own colors.</p>
-          <div className="hero-actions">
-            <button className="btn" onClick={() => document.getElementById('bouquets').scrollIntoView({ behavior: 'smooth' })}>
-              See our bouquets
-            </button>
-            <a href="#/customize" className="btn btn-ghost">Build from scratch</a>
+          <div className="hero-text">
+            <p className="kicker hand">handmade with love ✿</p>
+            <h1>
+              {settings.tagline}
+              <Swash className="hero-swash" />
+            </h1>
+            <p className="hero-lead">Browse the bouquets we’ve made. Order one as is, or make one like it in your own colors.</p>
+            <div className="hero-actions">
+              <button className="btn" onClick={scrollToBouquets}>See our bouquets</button>
+              <a href="#/customize" className="btn btn-ghost">Build your own</a>
+            </div>
+          </div>
+
+          <div className="hero-collage" aria-hidden="true">
+            <Doodle name="sprig" size={70} className="hero-doodle d1" />
+            <Doodle name="sparkle" size={34} className="hero-doodle d2" />
+            <Doodle name="heart" size={30} className="hero-doodle d3" />
+            {collage.map((b, i) => (
+              <figure key={b.id} className={'polaroid collage-' + i}>
+                <span className="tape" />
+                <Photo src={b.image_url} emoji={b.emoji} seed={b.id} alt="" />
+                <figcaption className="polaroid-caption hand">{b.name}</figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="bouquets" className="container section">
-        <div className="section-head">
-          <div>
-            <h2>Bouquets we’ve made</h2>
+      <div ref={pageRef}>
+        <OccasionTiles categories={categories} counts={counts} onPick={pickOccasion} />
+
+        <section id="bouquets" className="container section bouquets">
+          <div className="section-head reveal">
+            <p className="kicker hand">fresh from the workbench</p>
+            <h2 className="section-title">Bouquets we’ve made</h2>
             <p className="muted">All handmade by us. Tap a photo to see it up close.</p>
           </div>
+
           {categories.length > 1 && (
-            <div className="filters" role="tablist">
+            <div className="tag-filters" role="tablist" aria-label="Filter by occasion">
               {['All', ...categories].map((c) => (
-                <button key={c} role="tab" aria-selected={category === c} className={'chip-btn' + (category === c ? ' active' : '')} onClick={() => setCategory(c)}>
+                <button key={c} role="tab" aria-selected={category === c} className={'tag-label' + (category === c ? ' active' : '')} onClick={() => setCategory(c)}>
                   {c}
                 </button>
               ))}
             </div>
           )}
-        </div>
 
-        {shown.length === 0 ? (
-          <p className="muted">New bouquets coming soon 🌱</p>
-        ) : (
-          <div className="grid">
-            {shown.map((b) => (
-              <BouquetCard
-                key={b.id}
-                bouquet={b}
-                inside={insideOf(b)}
-                inCart={cart.qtyOf(b.id)}
-                onOrder={() => order(b)}
-                onMakeLike={() => makeLike(b)}
-                onZoom={() => setZoomed(b)}
-              />
-            ))}
+          {shown.length === 0 ? (
+            <p className="muted empty-note">New bouquets coming soon 🌱</p>
+          ) : (
+            <div className="bq-grid">
+              {shown.map((b, i) => (
+                <BouquetCard
+                  key={b.id}
+                  index={i}
+                  bouquet={b}
+                  inside={insideOf(b)}
+                  inCart={cart.qtyOf(b.id)}
+                  onOrder={() => order(b)}
+                  onMakeLike={() => makeLike(b)}
+                  onZoom={() => setZoomed(b)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <HowItWorks />
+
+        <section className="container section">
+          <div className="cta kraft-panel reveal">
+            <Doodle name="bouquet" size={64} className="cta-doodle" />
+            <div className="cta-text">
+              <p className="kicker hand">have your own idea?</p>
+              <h2 className="section-title">Build a bouquet, stem by stem</h2>
+              <p>Pick every flower, color, and wrap yourself, and we’ll make it for you.</p>
+            </div>
+            <a href="#/customize" className="btn">Start building →</a>
           </div>
-        )}
-      </section>
+        </section>
 
-      <section className="container section cta">
-        <div>
-          <h2>Have your own idea?</h2>
-          <p className="muted">Pick every flower, color, and wrap yourself, and we’ll make it for you.</p>
-        </div>
-        <a href="#/customize" className="btn">Build from scratch</a>
-      </section>
+        <AboutMaker settings={settings} />
+      </div>
 
       {zoomed && (
         <div className="lightbox" onClick={() => setZoomed(null)} role="dialog" aria-modal="true" aria-label={zoomed.name}>
-          <div className="lightbox-inner" onClick={(e) => e.stopPropagation()}>
+          <div className="lightbox-inner polaroid" onClick={(e) => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setZoomed(null)} aria-label="Close">×</button>
             <Photo src={zoomed.image_url} emoji={zoomed.emoji} seed={zoomed.id} alt={zoomed.name} className="lightbox-photo" full />
             <div className="lightbox-caption">
               <strong>{zoomed.code && <span className="code-inline">#{zoomed.code}</span>} {zoomed.name}</strong>
+              {hasPrice(zoomed.price) && <span className="bouquet-price">{peso(zoomed.price)}</span>}
               {zoomed.description && <p className="muted small lightbox-desc">{zoomed.description}</p>}
               {insideOf(zoomed).length > 0 && (
                 <p className="small lightbox-inside">

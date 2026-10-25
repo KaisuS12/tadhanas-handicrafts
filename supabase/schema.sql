@@ -11,7 +11,10 @@ create table if not exists settings (
   facebook_url text default '',
   phone text default '',
   location text default '',
-  hours text default ''
+  hours text default '',
+  about_title text,  -- "About the maker" section; null = default text
+  about_text text,
+  about_photo text
 );
 
 create table if not exists bouquets (
@@ -21,6 +24,7 @@ create table if not exists bouquets (
   description text default '',
   image_url text default '',
   emoji text default '💐',
+  price integer,  -- pesos; empty = no price shown
   code text default '',  -- e.g. B001, shown on the photo so customers can reference it
   wrapper_id text default '',
   recipe jsonb default '[]',  -- [{ flower_id, color, qty }]: what's inside
@@ -51,6 +55,10 @@ create table if not exists options (
 alter table bouquets add column if not exists wrapper_id text default '';
 alter table bouquets add column if not exists recipe jsonb default '[]';
 alter table bouquets add column if not exists code text default '';
+alter table bouquets add column if not exists price integer;
+alter table settings add column if not exists about_title text;
+alter table settings add column if not exists about_text text;
+alter table settings add column if not exists about_photo text;
 alter table options add column if not exists active boolean default true;
 
 -- ---------- Security: anyone can read, only the logged-in owner can change ----------

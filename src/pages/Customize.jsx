@@ -2,6 +2,7 @@ import FlowerCard from '../components/FlowerCard.jsx'
 import CartPanel from '../components/CartPanel.jsx'
 import { useShopData } from '../lib/shopData.jsx'
 import { useCart } from '../lib/cart.jsx'
+import Doodle from '../components/Doodle.jsx'
 
 export default function Customize() {
   const { flowers, wrappers, addOns } = useShopData()
@@ -13,17 +14,28 @@ export default function Customize() {
 
   return (
     <div className="container section">
-      <h1 className="page-title">Build your bouquet</h1>
-      <p className="muted">Add as many flowers as you like. We’ll confirm the price with you on Messenger.</p>
+      <header className="build-head">
+        <Doodle name="bouquet" size={56} className="build-doodle" />
+        <div>
+          <p className="kicker hand">make it yours ✿</p>
+          <h1 className="page-title">Build your bouquet</h1>
+          <p className="muted">Add as many flowers as you like. We’ll confirm the price with you on Messenger.</p>
+        </div>
+      </header>
+      <ol className="build-steps" aria-label="Steps">
+        <li><span className="hand">1</span> Pick flowers</li>
+        <li><span className="hand">2</span> Wrap &amp; extras</li>
+        <li><span className="hand">3</span> Your details</li>
+      </ol>
 
       <div className="customize-layout">
         <div className="customize-main">
-          <FlowerSection title="Flowers" list={main} />
-          <FlowerSection title="Fillers & greens" list={fillers} />
+          <FlowerSection title="Flowers" note="the stars of your bouquet" list={main} />
+          <FlowerSection title="Fillers & greens" note="the soft, leafy bits" list={fillers} />
 
           {wrappers.length > 0 && (
             <section className="card step">
-              <h3>Wrapping</h3>
+              <h3><span className="step-num hand">2</span> Wrapping</h3>
               <div className="filters">
                 {wrappers.map((w) => (
                   <button key={w.id} className={'chip-btn' + (w.id === wrapperId ? ' active' : '')} onClick={() => cart.set({ wrapperId: w.id === wrapperId ? '' : w.id })}>
@@ -36,7 +48,7 @@ export default function Customize() {
 
           {addOns.length > 0 && (
             <section className="card step">
-              <h3>Extras</h3>
+              <h3>Extras <span className="hand step-note">little add-ons</span></h3>
               <div className="filters">
                 {addOns.map((a) => (
                   <button key={a.id} className={'chip-btn' + (addOnIds.includes(a.id) ? ' active' : '')} onClick={() => cart.toggleAddOn(a.id)}>
@@ -48,7 +60,7 @@ export default function Customize() {
           )}
 
           <section className="card step">
-            <h3>Card message <span className="muted small">(optional)</span></h3>
+            <h3>Card message <span className="hand step-note">optional</span></h3>
             <textarea rows={3} maxLength={200} placeholder="Happy birthday, love! 💕" value={cardMessage} onChange={(e) => cart.set({ cardMessage: e.target.value })} />
           </section>
         </div>
@@ -59,11 +71,13 @@ export default function Customize() {
   )
 }
 
-function FlowerSection({ title, list }) {
+function FlowerSection({ title, note, list }) {
   if (list.length === 0) return null
   return (
     <section className="step-plain">
-      <h3>{title}</h3>
+      <h3>
+        {title === 'Flowers' && <span className="step-num hand">1</span>} {title} <span className="hand step-note">{note}</span>
+      </h3>
       <div className="flower-grid">
         {list.map((f) => (
           <FlowerCard key={f.id} flower={f} />

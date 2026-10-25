@@ -14,42 +14,47 @@ export const settings = {
   phone: '0917 000 0000',
   location: 'Quezon City, Metro Manila',
   hours: 'Mon–Sat, 9AM–7PM',
+  // "About the maker" on the home page (empty story hides it)
+  about_title: 'Made by hand, with heart',
+  about_text:
+    'Every bouquet here is arranged by hand, one stem at a time. Birthdays, anniversaries, graduations, or a quiet “just because”, tell us the story behind your order and we’ll make something that fits it.',
+  about_photo: '',
 }
 
 // recipe = what's inside, so customers can "Make one like this"
 export const bouquets = [
   {
-    id: 'classic-red', code: 'B001', name: 'Classic Red Dozen', category: 'Anniversary', emoji: '🌹', image_url: '', sort: 1, active: true,
+    id: 'classic-red', code: 'B001', name: 'Classic Red Dozen', category: 'Anniversary', emoji: '🌹', image_url: '', sort: 1, active: true, price: 1899,
     description: 'A dozen red roses with baby’s breath. Timeless.',
     wrapper_id: 'korean',
     recipe: [{ flower_id: 'rose', color: 'Red', qty: 12 }, { flower_id: 'babys-breath', color: 'White', qty: 4 }],
   },
   {
-    id: 'sunny-day', code: 'B002', name: 'Sunny Day', category: 'Graduation', emoji: '🌻', image_url: '', sort: 2, active: true,
+    id: 'sunny-day', code: 'B002', name: 'Sunny Day', category: 'Graduation', emoji: '🌻', image_url: '', sort: 2, active: true, price: 1299,
     description: 'Bright sunflowers with eucalyptus for the big day.',
     wrapper_id: 'kraft',
     recipe: [{ flower_id: 'sunflower', color: 'Yellow', qty: 3 }, { flower_id: 'eucalyptus', color: 'Green', qty: 3 }],
   },
   {
-    id: 'blush-tulips', code: 'B003', name: 'Blush Tulips', category: 'Birthday', emoji: '🌷', image_url: '', sort: 3, active: true,
+    id: 'blush-tulips', code: 'B003', name: 'Blush Tulips', category: 'Birthday', emoji: '🌷', image_url: '', sort: 3, active: true, price: 1599,
     description: 'Soft pink tulips, simple and sweet.',
     wrapper_id: 'korean',
     recipe: [{ flower_id: 'tulip', color: 'Pink', qty: 10 }, { flower_id: 'fern', color: 'Green', qty: 3 }],
   },
   {
-    id: 'mini-love', code: 'B004', name: 'Mini Love', category: 'Just Because', emoji: '💐', image_url: '', sort: 4, active: true,
+    id: 'mini-love', code: 'B004', name: 'Mini Love', category: 'Just Because', emoji: '💐', image_url: '', sort: 4, active: true, price: 599,
     description: 'Small but sweet. Perfect for “just because”.',
     wrapper_id: 'kraft',
     recipe: [{ flower_id: 'rose', color: 'Pink', qty: 3 }, { flower_id: 'babys-breath', color: 'White', qty: 2 }],
   },
   {
-    id: 'white-peace', code: 'B005', name: 'White Peace', category: 'Sympathy', emoji: '🤍', image_url: '', sort: 5, active: true,
+    id: 'white-peace', code: 'B005', name: 'White Peace', category: 'Sympathy', emoji: '🤍', image_url: '', sort: 5, active: true, price: 2499,
     description: 'Calm white lilies and greens in a basket.',
     wrapper_id: 'basket',
     recipe: [{ flower_id: 'lily', color: 'White', qty: 6 }, { flower_id: 'eucalyptus', color: 'Green', qty: 5 }],
   },
   {
-    id: 'pastel-dream', code: 'B006', name: 'Pastel Dream', category: 'Birthday', emoji: '🌸', image_url: '', sort: 6, active: true,
+    id: 'pastel-dream', code: 'B006', name: 'Pastel Dream', category: 'Birthday', emoji: '🌸', image_url: '', sort: 6, active: true, price: 2199,
     description: 'Mixed pastel roses and carnations with statice.',
     wrapper_id: 'korean',
     recipe: [
