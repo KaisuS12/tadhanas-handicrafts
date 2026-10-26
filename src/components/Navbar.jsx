@@ -16,7 +16,7 @@ export default function Navbar({ route }) {
           <a href="#/" className={route === 'home' ? 'active' : ''}>Bouquets</a>
           <a href="#/customize" className={route === 'customize' ? 'active' : ''}>Build your own</a>
           <a href="#/customize/bag" className="btn btn-small nav-order">
-            My order{count > 0 && <span className="badge">{count}</span>}
+            My order{count > 0 && <span key={count} className="badge">{count}</span>}
           </a>
         </nav>
       </div>

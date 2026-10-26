@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Photo from './Photo.jsx'
 import QuantityStepper from './QuantityStepper.jsx'
 import { useCart } from '../lib/cart.jsx'
+import { flyToCart } from '../lib/flyToCart.js'
 
 // Color names the owner types in admin → a swatch color (unknown names get kraft)
 const SWATCH = {
@@ -18,8 +19,10 @@ export default function FlowerCard({ flower }) {
   const qty = cart.qtyOf(flower.id, color)
   const key = color ? `${flower.id}::${color}` : flower.id
 
-  const add = () =>
+  const add = (e) => {
+    flyToCart(e?.currentTarget.closest('.seed-packet')?.querySelector('.photo'))
     cart.add({ kind: 'flower', refId: flower.id, name: flower.name, color, image_url: flower.image_url, emoji: flower.emoji })
+  }
 
   return (
     <article className="seed-packet">

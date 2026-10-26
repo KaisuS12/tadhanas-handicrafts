@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import useSwipeDown from '../lib/useSwipeDown.js'
 import useLockScroll from '../lib/useLockScroll.js'
 import { useCart } from '../lib/cart.jsx'
 import { useShopData } from '../lib/shopData.jsx'
@@ -25,6 +26,12 @@ export default function CartPanel() {
     if (open && window.location.hash.endsWith('/bag')) history.replaceState(null, '', '#/customize')
     setOpen((o) => !o)
   }
+
+  // Phones/tablets: drag the open sheet down to close it
+  const sheetRef = useRef(null)
+  const bodyRef = useRef(null)
+  const isSheet = window.matchMedia?.('(max-width: 899px)').matches
+  useSwipeDown(sheetRef, () => open && toggle(), { enabled: open && isSheet, scrollRef: bodyRef })
   const [showErrors, setShowErrors] = useState(false)
   const { items, details, basedOn } = cart.cart
   const priceOf = (i) => (i.kind === 'bouquet' ? shopData.bouquets.find((b) => b.id === i.refId)?.price : null)
@@ -42,14 +49,14 @@ export default function CartPanel() {
   return (
     <>
       {open && <div className="sheet-backdrop" onClick={toggle} aria-hidden="true" />}
-      <aside className={'card cart-panel' + (open ? ' open' : '')}>
+      <aside ref={sheetRef} className={'card cart-panel' + (open ? ' open' : '')}>
         <button className="cart-bar" onClick={toggle} aria-expanded={open}>
           <span className="sheet-handle" aria-hidden="true" />
           <span>{open ? 'My bouquet' : `💐 View my bouquet (${cart.count})`}</span>
           <span aria-hidden="true">{open ? '✕' : '▴'}</span>
         </button>
 
-        <div className="cart-body">
+        <div className="cart-body" ref={bodyRef}>
           <h3 className="cart-title"><span className="step-num hand">3</span> My order</h3>
           {cart.removed.length > 0 && (
             <p className="stock-notice" role="status">

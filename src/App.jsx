@@ -50,7 +50,9 @@ export default function App() {
           ) : (
             <>
               <Navbar route={route} />
-              <main>{page}</main>
+              <main key={route} className="page-enter">
+                {page}
+              </main>
               <Footer />
               <BottomNav route={route} />
             </>

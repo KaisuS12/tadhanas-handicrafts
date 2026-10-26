@@ -4,7 +4,7 @@ export default function QuantityStepper({ value, onChange, min = 0, max = 99, la
       <button type="button" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`Fewer ${label}`}>
         −
       </button>
-      <span className="stepper-value">{value}</span>
+      <span key={value} className="stepper-value">{value}</span>
       <button type="button" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label={`More ${label}`}>
         +
       </button>

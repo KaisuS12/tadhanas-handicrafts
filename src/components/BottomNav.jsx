@@ -15,7 +15,7 @@ export default function BottomNav({ route }) {
         <a key={t.label} href={t.href} className={'bottom-tab' + (t.active ? ' active' : '')} aria-current={t.active ? 'page' : undefined}>
           <span className="bottom-icon" aria-hidden="true">
             <Doodle name={t.icon} size={26} strokeWidth={2.3} />
-            {t.badge > 0 && <span className="bottom-badge">{t.badge}</span>}
+            {t.badge > 0 && <span key={t.badge} className="bottom-badge">{t.badge}</span>}
           </span>
           {t.label}
         </a>

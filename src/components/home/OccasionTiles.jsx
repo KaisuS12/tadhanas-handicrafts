@@ -9,7 +9,7 @@ export default function OccasionTiles({ categories, counts, onPick }) {
       <h2 id="occasions-title" className="section-title">Shop by occasion</h2>
       <div className="occasion-grid">
         {categories.map((c, i) => (
-          <button key={c} className={'occasion tone-' + (i % 4)} onClick={() => onPick(c)}>
+          <button key={c} className={'occasion tone-' + (i % 4)} style={{ '--d': `${0.15 + i * 0.08}s` }} onClick={() => onPick(c)}>
             <span className="occasion-icon">
               <Doodle name={occasionDoodle(c)} size={44} />
             </span>

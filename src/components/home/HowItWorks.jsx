@@ -14,7 +14,7 @@ export default function HowItWorks() {
         <h2 id="how-title" className="section-title">How ordering works</h2>
         <ol className="how-steps">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="how-step">
+            <li key={s.title} className="how-step" style={{ '--d': `${0.35 + i * 0.25}s` }}>
               <span className="how-icon">
                 <Doodle name={s.icon} size={42} />
                 <span className="how-num hand">{i + 1}</span>

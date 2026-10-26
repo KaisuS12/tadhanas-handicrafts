@@ -6,7 +6,7 @@ const TILTS = ['-1.2deg', '0.8deg', '-0.5deg', '1.1deg', '-0.9deg', '0.4deg']
 
 export default function BouquetCard({ bouquet, index = 0, inside, inCart, onOrder, onMakeLike, onZoom }) {
   return (
-    <article className="bq polaroid reveal" style={{ '--tilt': TILTS[index % TILTS.length] }}>
+    <article className="bq polaroid reveal" style={{ '--tilt': TILTS[index % TILTS.length], '--d': `${(index % 4) * 90}ms` }}>
       <button className="bq-photo" onClick={onZoom} aria-label={`View ${bouquet.name} larger`}>
         <span className="tape" aria-hidden="true" />
         <Photo src={bouquet.image_url} emoji={bouquet.emoji} seed={bouquet.id} alt={bouquet.name} />
@@ -33,7 +33,9 @@ export default function BouquetCard({ bouquet, index = 0, inside, inCart, onOrde
           </div>
         )}
         <div className="card-actions">
-          <button className="btn btn-small" onClick={onOrder}>{inCart > 0 ? `✓ Added (${inCart})` : 'Order this'}</button>
+          <button className="btn btn-small" onClick={(e) => onOrder(e.currentTarget.closest('.bq')?.querySelector('.photo'))}>
+            <span key={inCart} className={inCart > 0 ? 'pop-text' : undefined}>{inCart > 0 ? `✓ Added (${inCart})` : 'Order this'}</span>
+          </button>
           {inside.length > 0 && <button className="btn btn-small btn-ghost" onClick={onMakeLike}>✏️ Make one like this</button>}
         </div>
       </div>

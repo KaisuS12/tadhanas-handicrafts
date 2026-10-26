@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toBlob } from 'html-to-image'
 import useLockScroll from '../lib/useLockScroll.js'
 import Doodle from '../components/Doodle.jsx'
+import Petals from '../components/Petals.jsx'
 import { hasPrice, peso } from '../lib/money.js'
 import { priceSummary } from '../lib/pricing.js'
 import { useCart } from '../lib/cart.jsx'
@@ -12,6 +13,12 @@ export default function Receipt({ notify }) {
   const { receipt } = useCart()
   const { settings } = useShopData()
   const ref = useRef(null)
+  const stampRef = useRef(null)
+  const [burst, setBurst] = useState(true) // one petal shower when the receipt opens
+  useEffect(() => {
+    const t = setTimeout(() => setBurst(false), 3200)
+    return () => clearTimeout(t)
+  }, [])
   const [file, setFile] = useState(null) // the receipt as a PNG, rendered ahead of time
   const [preview, setPreview] = useState('') // object URL for the press-and-hold fallback
   useLockScroll(Boolean(preview))
@@ -26,6 +33,7 @@ export default function Receipt({ notify }) {
     ;(async () => {
       try {
         await document.fonts?.ready
+        await stampDown(stampRef.current) // so the saved picture includes the stamp
         const blob = await toBlob(ref.current, { pixelRatio: 2, backgroundColor: '#ffffff' })
         if (!cancelled && blob) setFile(new File([blob], `${orderNo}.png`, { type: 'image/png' }))
       } catch (err) {
@@ -93,7 +101,9 @@ export default function Receipt({ notify }) {
       <h1 className="page-title center">Almost done 🎉</h1>
       <p className="muted center">Save this receipt and send it to our Facebook page. We’ll reply with the price and payment details.</p>
 
+      {burst && <Petals mode="burst" count={18} />}
       <div className="receipt" ref={ref}>
+        <span className="stamp" ref={stampRef} aria-hidden="true">order placed ✿</span>
         <div className="receipt-head">
           <div className="receipt-logo"><Doodle name="tulip" size={40} /></div>
           <h2>{settings.name}</h2>
@@ -200,4 +210,19 @@ export default function Receipt({ notify }) {
       )}
     </div>
   )
+}
+
+// Thump the "order placed" stamp onto the slip. Done from code (not a CSS
+// animation) so the receipt image export captures the finished stamp.
+function stampDown(el) {
+  if (!el || typeof el.animate !== 'function' || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return Promise.resolve()
+  const anim = el.animate(
+    [
+      { transform: 'rotate(-12deg) scale(2.4)', opacity: 0 },
+      { transform: 'rotate(-12deg) scale(0.92)', opacity: 1, offset: 0.7 },
+      { transform: 'rotate(-12deg) scale(1)', opacity: 1 },
+    ],
+    { duration: 520, delay: 450, easing: 'cubic-bezier(.3,.6,.35,1.25)', fill: 'backwards' },
+  )
+  return anim.finished.catch(() => {})
 }

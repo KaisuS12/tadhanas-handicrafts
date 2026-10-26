@@ -6,6 +6,9 @@ import { useShopData } from '../lib/shopData.jsx'
 import { useCart } from '../lib/cart.jsx'
 import { hasPrice, peso } from '../lib/money.js'
 import useReveal from '../lib/useReveal.js'
+import useSwipeDown from '../lib/useSwipeDown.js'
+import { flyToCart } from '../lib/flyToCart.js'
+import Petals from '../components/Petals.jsx'
 import Doodle, { Swash } from '../components/Doodle.jsx'
 import OccasionTiles from '../components/home/OccasionTiles.jsx'
 import HowItWorks from '../components/home/HowItWorks.jsx'
@@ -20,6 +23,8 @@ export default function Home({ notify }) {
   useLockScroll(Boolean(zoomed))
   const pageRef = useRef(null)
   useReveal(pageRef, [bouquets.length, category])
+  const lightboxRef = useRef(null)
+  useSwipeDown(lightboxRef, () => setZoomed(null), { enabled: Boolean(zoomed) })
 
   const categories = [...new Set(bouquets.map((b) => b.category).filter(Boolean))]
   const counts = Object.fromEntries(categories.map((c) => [c, bouquets.filter((b) => b.category === c).length]))
@@ -49,7 +54,9 @@ export default function Home({ notify }) {
       })
       .filter(Boolean)
 
-  function order(b) {
+  // photoEl: the tapped bouquet's photo, which flies into "My order"
+  function order(b, photoEl) {
+    flyToCart(photoEl)
     cart.add({ kind: 'bouquet', refId: b.id, code: b.code, name: b.name, image_url: b.image_url, emoji: b.emoji })
     notify(`${b.name} added to your order`)
   }
@@ -75,11 +82,16 @@ export default function Home({ notify }) {
   return (
     <>
       <section className="hero">
+        <Petals />
         <div className="container hero-inner">
           <div className="hero-text">
             <p className="kicker hand">handmade with love ✿</p>
-            <h1>
-              {settings.tagline}
+            <h1 aria-label={settings.tagline}>
+              {settings.tagline.split(' ').map((word, i) => (
+                <span key={i} className="word" style={{ '--i': i }} aria-hidden="true">
+                  {word}{' '}
+                </span>
+              ))}
               <Swash className="hero-swash" />
             </h1>
             <p className="hero-lead">Browse the bouquets we’ve made. Order one as is, or make one like it in your own colors.</p>
@@ -90,11 +102,11 @@ export default function Home({ notify }) {
           </div>
 
           <div className="hero-collage" aria-hidden="true">
-            <Doodle name="sprig" size={70} className="hero-doodle d1" />
-            <Doodle name="sparkle" size={34} className="hero-doodle d2" />
-            <Doodle name="heart" size={30} className="hero-doodle d3" />
+            <Doodle name="sprig" size={70} className="hero-doodle d1 draw" />
+            <Doodle name="sparkle" size={34} className="hero-doodle d2 draw" />
+            <Doodle name="heart" size={30} className="hero-doodle d3 draw" />
             {collage.map((p, i) => (
-              <figure key={p.key} className={'polaroid collage-' + i}>
+              <figure key={p.key} className={'polaroid collage-' + i} style={{ '--n': i }}>
                 <span className="tape" />
                 <Photo src={p.src} emoji={p.emoji} seed={p.seed} alt="" />
                 <figcaption className="polaroid-caption hand">{p.caption || '\u00a0'}</figcaption>
@@ -135,7 +147,7 @@ export default function Home({ notify }) {
                   bouquet={b}
                   inside={insideOf(b)}
                   inCart={cart.qtyOf(b.id)}
-                  onOrder={() => order(b)}
+                  onOrder={(photoEl) => order(b, photoEl)}
                   onMakeLike={() => makeLike(b)}
                   onZoom={() => setZoomed(b)}
                 />
@@ -163,7 +175,8 @@ export default function Home({ notify }) {
 
       {zoomed && (
         <div className="lightbox" onClick={() => setZoomed(null)} role="dialog" aria-modal="true" aria-label={zoomed.name}>
-          <div className="lightbox-inner polaroid" onClick={(e) => e.stopPropagation()}>
+          <div className="lightbox-inner polaroid" ref={lightboxRef} onClick={(e) => e.stopPropagation()}>
+            <span className="sheet-grip" aria-hidden="true" />
             <button className="lightbox-close" onClick={() => setZoomed(null)} aria-label="Close">×</button>
             <Photo src={zoomed.image_url} emoji={zoomed.emoji} seed={zoomed.id} alt={zoomed.name} className="lightbox-photo" full />
             <div className="lightbox-caption">
@@ -177,7 +190,15 @@ export default function Home({ notify }) {
                 </p>
               )}
               <div className="card-actions">
-                <button className="btn btn-small" onClick={() => { order(zoomed); setZoomed(null) }}>Order this</button>
+                <button
+                  className="btn btn-small"
+                  onClick={() => {
+                    order(zoomed, lightboxRef.current?.querySelector('.photo'))
+                    setZoomed(null)
+                  }}
+                >
+                  Order this
+                </button>
                 {insideOf(zoomed).length > 0 && (
                   <button className="btn btn-small btn-ghost" onClick={() => { setZoomed(null); makeLike(zoomed) }}>✏️ Make one like this</button>
                 )}
