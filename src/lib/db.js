@@ -7,7 +7,7 @@ import * as seed from '../data/shop.js'
 export const mode = supabase ? 'supabase' : 'local'
 
 const TABLES = ['bouquets', 'flowers', 'options']
-const LOCAL_KEY = 'tadhana-test-db-v6' // bump when the sample data changes shape
+const LOCAL_KEY = 'tadhana-test-db-v7' // bump when the sample data changes shape
 const bySort = (a, b) => (a.sort ?? 0) - (b.sort ?? 0)
 
 // ---------- Local test store ----------

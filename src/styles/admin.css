@@ -239,3 +239,7 @@
 .adm-drawer-error { margin: 0; padding: 0.7rem 1.25rem; background: var(--warn-soft); color: var(--warn); font-size: 0.88rem; font-weight: 500; border-top: 1px solid #f0c9bd; }
 .about-drop { aspect-ratio: 4 / 3; max-width: 320px; }
 .adm-settings code { background: var(--kraft-soft); padding: 0.05rem 0.3rem; border-radius: 4px; }
+.hero-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
+.hero-slot { display: flex; flex-direction: column; gap: 0.45rem; align-items: flex-start; }
+.hero-slot .adm-photo-drop { width: 100%; aspect-ratio: 4 / 5; max-height: none; }
+@media (max-width: 720px) { .hero-slots { grid-template-columns: 1fr 1fr; } }

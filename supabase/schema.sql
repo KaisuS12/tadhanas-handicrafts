@@ -14,7 +14,8 @@ create table if not exists settings (
   hours text default '',
   about_title text,  -- "About the maker" section; null = default text
   about_text text,
-  about_photo text
+  about_photo text,
+  hero_photos jsonb default '[]'  -- [{ url, caption }] for the home page collage
 );
 
 create table if not exists bouquets (
@@ -59,6 +60,7 @@ alter table bouquets add column if not exists price integer;
 alter table settings add column if not exists about_title text;
 alter table settings add column if not exists about_text text;
 alter table settings add column if not exists about_photo text;
+alter table settings add column if not exists hero_photos jsonb default '[]';
 alter table options add column if not exists active boolean default true;
 
 -- ---------- Security: anyone can read, only the logged-in owner can change ----------

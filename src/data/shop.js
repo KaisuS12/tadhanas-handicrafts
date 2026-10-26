@@ -19,6 +19,8 @@ export const settings = {
   about_text:
     'Every bouquet here is arranged by hand, one stem at a time. Birthdays, anniversaries, graduations, or a quiet “just because”, tell us the story behind your order and we’ll make something that fits it.',
   about_photo: '',
+  // Up to 3 photos for the top of the home page: [{ url, caption }]. Empty = use bouquet photos
+  hero_photos: [],
 }
 
 // recipe = what's inside, so customers can "Make one like this"

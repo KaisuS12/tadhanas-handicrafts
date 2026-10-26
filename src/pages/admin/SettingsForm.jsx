@@ -82,6 +82,24 @@ export default function SettingsForm({ onChanged, notify }) {
 
   if (!row) return <p className="muted">Loading…</p>
   const hasAbout = 'about_text' in row
+  const hasHero = 'hero_photos' in row
+  const heroSlots = [0, 1, 2].map((i) => row.hero_photos?.[i] ?? { url: '', caption: '' })
+  const setSlot = (i, patch) => {
+    const next = heroSlots.map((s, j) => (j === i ? { ...s, ...patch } : s))
+    // keep filled slots first so the collage order matches what she sees
+    setRow((r) => ({ ...r, hero_photos: next.filter((s) => s.url || s.caption) }))
+  }
+  async function uploadHero(i, file) {
+    if (!file) return
+    setUploading(true)
+    try {
+      setSlot(i, { url: await uploadPhoto(file, 'home') })
+    } catch (err) {
+      notify('Upload failed: ' + err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
   return (
     <form className="adm-settings" onSubmit={save}>
       {GROUPS.map((g) => (
@@ -101,6 +119,34 @@ export default function SettingsForm({ onChanged, notify }) {
           ))}
         </section>
       ))}
+
+      <section className="adm-panel">
+        <h2>Home page photos</h2>
+        {!hasHero ? (
+          <p className="adm-hint">
+            Choosing your own home page photos needs a quick database update. In Supabase → SQL Editor, run the latest lines from <code>supabase/schema.sql</code>.
+          </p>
+        ) : (
+          <>
+            <p className="adm-hint" style={{ marginTop: '-0.5rem' }}>
+              The 3 polaroids at the top of your home page. Leave them empty to show your bouquet photos instead.
+            </p>
+            <div className="hero-slots">
+              {heroSlots.map((slot, i) => (
+                <div key={i} className="hero-slot">
+                  <label className={'adm-photo-drop' + (slot.url ? ' has-photo' : '')}>
+                    {slot.url ? <img src={slot.url} alt="" /> : <span className="adm-photo-empty"><span aria-hidden="true">📷</span>Photo {i + 1}</span>}
+                    <input type="file" accept="image/*" hidden onChange={(e) => uploadHero(i, e.target.files[0])} />
+                  </label>
+                  <input value={slot.caption ?? ''} placeholder="Caption (optional)" maxLength={30} onChange={(e) => setSlot(i, { caption: e.target.value })} disabled={!slot.url} />
+                  {slot.url && <button type="button" className="link-btn" onClick={() => setSlot(i, { url: '', caption: '' })}>Remove</button>}
+                </div>
+              ))}
+            </div>
+            {uploading && <p className="adm-hint">Uploading…</p>}
+          </>
+        )}
+      </section>
 
       <section className="adm-panel">
         <h2>About you</h2>

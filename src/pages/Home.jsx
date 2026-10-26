@@ -23,7 +23,14 @@ export default function Home({ notify }) {
 
   const categories = [...new Set(bouquets.map((b) => b.category).filter(Boolean))]
   const counts = Object.fromEntries(categories.map((c) => [c, bouquets.filter((b) => b.category === c).length]))
-  const collage = bouquets.slice(0, 3)
+  // Hero photos: the owner's picks from Admin → Shop info, otherwise her bouquets (ones with photos first)
+  const picked = (settings.hero_photos ?? []).filter((p) => p?.url)
+  const collage = picked.length
+    ? picked.slice(0, 3).map((p, i) => ({ key: 'hero' + i, src: p.url, caption: p.caption, seed: 'hero' + i }))
+    : [...bouquets]
+        .sort((a, b) => Boolean(b.image_url) - Boolean(a.image_url))
+        .slice(0, 3)
+        .map((b) => ({ key: b.id, src: b.image_url, caption: b.name, emoji: b.emoji, seed: b.id }))
 
   const scrollToBouquets = () => document.getElementById('bouquets')?.scrollIntoView({ behavior: 'smooth' })
   function pickOccasion(c) {
@@ -86,11 +93,11 @@ export default function Home({ notify }) {
             <Doodle name="sprig" size={70} className="hero-doodle d1" />
             <Doodle name="sparkle" size={34} className="hero-doodle d2" />
             <Doodle name="heart" size={30} className="hero-doodle d3" />
-            {collage.map((b, i) => (
-              <figure key={b.id} className={'polaroid collage-' + i}>
+            {collage.map((p, i) => (
+              <figure key={p.key} className={'polaroid collage-' + i}>
                 <span className="tape" />
-                <Photo src={b.image_url} emoji={b.emoji} seed={b.id} alt="" />
-                <figcaption className="polaroid-caption hand">{b.name}</figcaption>
+                <Photo src={p.src} emoji={p.emoji} seed={p.seed} alt="" />
+                <figcaption className="polaroid-caption hand">{p.caption || '\u00a0'}</figcaption>
               </figure>
             ))}
           </div>
