@@ -5,7 +5,7 @@ import { useCart } from '../lib/cart.jsx'
 import Doodle from '../components/Doodle.jsx'
 
 export default function Customize() {
-  const { flowers, wrappers, addOns } = useShopData()
+  const { flowers, wrappers, addOns, ready } = useShopData()
   const cart = useCart()
   const { wrapperId, addOnIds, cardMessage } = cart.cart
 
@@ -30,6 +30,17 @@ export default function Customize() {
 
       <div className="customize-layout">
         <div className="customize-main">
+          {!ready && (
+            <div className="flower-grid" aria-busy="true" aria-label="Loading flowers">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="seed-packet is-loading">
+                  <div className="packet-band"><span className="skeleton skeleton-line short" /></div>
+                  <div className="photo flower-photo skeleton" />
+                  <div className="flower-card-body"><span className="skeleton skeleton-line" /></div>
+                </div>
+              ))}
+            </div>
+          )}
           <FlowerSection title="Flowers" note="the stars of your bouquet" list={main} />
           <FlowerSection title="Fillers & greens" note="the soft, leafy bits" list={fillers} />
 

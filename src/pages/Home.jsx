@@ -13,10 +13,11 @@ import Doodle, { Swash } from '../components/Doodle.jsx'
 import OccasionTiles from '../components/home/OccasionTiles.jsx'
 import HowItWorks from '../components/home/HowItWorks.jsx'
 import AboutMaker from '../components/home/AboutMaker.jsx'
+import HeroCollage from '../components/home/HeroCollage.jsx'
 
 export default function Home({ notify }) {
   const shopData = useShopData()
-  const { settings, bouquets, flowers, allFlowers } = shopData
+  const { settings, bouquets, flowers, allFlowers, ready } = shopData
   const cart = useCart()
   const [category, setCategory] = useState('All')
   const [zoomed, setZoomed] = useState(null)
@@ -101,18 +102,7 @@ export default function Home({ notify }) {
             </div>
           </div>
 
-          <div className="hero-collage" aria-hidden="true">
-            <Doodle name="sprig" size={70} className="hero-doodle d1 draw" />
-            <Doodle name="sparkle" size={34} className="hero-doodle d2 draw" />
-            <Doodle name="heart" size={30} className="hero-doodle d3 draw" />
-            {collage.map((p, i) => (
-              <figure key={p.key} className={'polaroid collage-' + i} style={{ '--n': i }}>
-                <span className="tape" />
-                <Photo src={p.src} emoji={p.emoji} seed={p.seed} alt="" />
-                <figcaption className="polaroid-caption hand">{p.caption || '\u00a0'}</figcaption>
-              </figure>
-            ))}
-          </div>
+          <HeroCollage items={collage} ready={ready} />
         </div>
       </section>
 
@@ -136,7 +126,19 @@ export default function Home({ notify }) {
             </div>
           )}
 
-          {shown.length === 0 ? (
+          {!ready ? (
+            <div className="bq-grid" aria-busy="true" aria-label="Loading bouquets">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="bq polaroid is-loading">
+                  <div className="photo skeleton" />
+                  <div className="bq-body">
+                    <span className="skeleton skeleton-line" />
+                    <span className="skeleton skeleton-line short" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : shown.length === 0 ? (
             <p className="muted empty-note">New bouquets coming soon 🌱</p>
           ) : (
             <div className="bq-grid">

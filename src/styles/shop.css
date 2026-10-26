@@ -64,14 +64,29 @@
 .hero-lead { font-size: 1.15rem; color: var(--muted); max-width: 34ch; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.6rem; }
 
-.hero-collage { position: relative; height: 430px; }
-.hero-collage .polaroid { position: absolute; width: 50%; transform: rotate(var(--r)); transition: transform 0.3s; }
+.hero-collage { position: relative; height: 430px; margin-bottom: 3rem; }
+/* The tilt is a registered property so it can glide smoothly when photos swap spots */
+@property --r { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.hero-collage .polaroid {
+  position: absolute; width: 50%; transform: rotate(var(--r));
+  transition: left 0.6s cubic-bezier(0.3, 0.7, 0.2, 1), top 0.6s cubic-bezier(0.3, 0.7, 0.2, 1), width 0.6s ease, --r 0.6s ease;
+}
 .hero-collage .photo { aspect-ratio: 4 / 5; }
 .hero-collage .photo-placeholder span { font-size: 4.5rem; }
-.collage-0 { --r: -8deg; left: 0; top: 10%; z-index: 1; }
-.collage-1 { --r: 6deg; right: 0; top: 0; z-index: 2; }
-.collage-2 { --r: -2deg; left: 27%; bottom: -10%; width: 46% !important; z-index: 3; }
-.collage-1 .tape { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px), color-mix(in srgb, var(--sage) 55%, #f6e7d7); }
+/* three spots in the stack: back-left, back-right, front */
+.hero-collage .slot-0 { --r: -8deg; left: 0; top: 10%; z-index: 1; }
+.hero-collage .slot-1 { --r: 6deg; left: 50%; top: 0; z-index: 2; }
+.hero-collage .slot-2 { --r: -2deg; left: 27%; top: 26%; width: 46%; z-index: 3; }
+.hero-collage .tape-sage { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px), color-mix(in srgb, var(--sage) 55%, #f6e7d7); }
+.hero-collage.can-shuffle { cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: pan-y; }
+.hero-collage.can-shuffle:focus-visible { outline: 3px dashed var(--accent); outline-offset: 8px; border-radius: 12px; }
+.shuffle-hint {
+  position: absolute; left: 50%; bottom: -4.4rem; z-index: 5; transform: translateX(-50%) rotate(-2deg);
+  font-size: 1.35rem; color: var(--accent); white-space: nowrap; pointer-events: none;
+  animation: rise 0.6s ease 2.4s both, nudge 2.4s ease-in-out 3s infinite;
+}
+.shuffle-hint.gone { opacity: 0; transition: opacity 0.4s; animation: none; }
+@keyframes nudge { 0%, 100% { transform: translateX(-50%) rotate(-2deg); } 50% { transform: translateX(-50%) rotate(-2deg) translateY(-4px); } }
 .hero-doodle { position: absolute; z-index: 4; }
 .hero-doodle.d1 { left: -2%; bottom: 8%; color: var(--green); transform: rotate(-20deg); }
 .hero-doodle.d2 { right: 6%; bottom: 14%; color: #d4a73a; }
@@ -301,7 +316,8 @@
   .hero-lead { margin-left: auto; margin-right: auto; }
   .hero-actions { justify-content: center; }
   .hero .swash { margin-left: auto; margin-right: auto; }
-  .hero-collage { height: 360px; max-width: 520px; width: 100%; margin: 0 auto; }
+  .hero-collage { height: 360px; max-width: 520px; width: 100%; margin: 0 auto 3.4rem; }
+  .hero-collage .slot-2 { top: 12%; }
   .how-steps { gap: 1.25rem; }
   .about { grid-template-columns: 1fr; gap: 2rem; }
   .footer-inner { grid-template-columns: 1fr 1fr; }
@@ -350,11 +366,12 @@
   .hero-collage { height: 270px; max-width: 360px; }
   .hero-collage .polaroid { width: 52%; padding: 7px 7px 0; }
   .hero-collage .polaroid-caption { font-size: 1.05rem; }
-  .collage-0 .polaroid-caption, .collage-1 .polaroid-caption { visibility: hidden; }
+  .hero-collage .slot-0 .polaroid-caption, .hero-collage .slot-1 .polaroid-caption { visibility: hidden; }
   .hero-collage .photo-placeholder span { font-size: 3.2rem; }
-  .collage-0 { left: 0; top: 8%; }
-  .collage-1 { right: 0; top: 2%; }
-  .collage-2 { left: 24%; bottom: -2%; }
+  .hero-collage .slot-0 { left: 0; top: 8%; }
+  .hero-collage .slot-1 { left: 48%; top: 2%; }
+  .hero-collage .slot-2 { left: 24%; top: 9%; }
+  .shuffle-hint { font-size: 1.2rem; bottom: -3.3rem; }
   .hero-doodle.d1 { width: 48px; height: 48px; }
 
   /* Occasions: swipeable row */
@@ -545,3 +562,18 @@
   .cart-panel.open { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.3, 1); }
   .stamp { font-size: 0.92rem; top: 0.55rem; right: 0.35rem; padding: 0.15rem 0.45rem; }
 }
+
+/* ---------- Loading placeholders (first visit, before the shop data arrives) ---------- */
+@keyframes shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+.skeleton {
+  display: block; border-radius: 6px;
+  background: linear-gradient(100deg, #efe6da 30%, #f8f2ea 50%, #efe6da 70%) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.skeleton-line { height: 0.95rem; width: 80%; margin: 0.25rem 0; }
+.skeleton-line.short { width: 45%; }
+.photo.skeleton { border-radius: 2px; }
+/* placeholders sit still; only the real photos get the drop-in */
+.hero-collage .polaroid.is-loading { animation: none; opacity: 0.7; }
+.is-loading { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }

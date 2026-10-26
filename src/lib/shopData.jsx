@@ -19,17 +19,49 @@ function shape(raw) {
 }
 
 const seedData = shape(seed)
-const ShopDataContext = createContext(seedData)
+
+// The last shop data this phone saw, so a refresh shows the real bouquets
+// instantly instead of the built-in samples (then it quietly updates).
+const CACHE_KEY = 'tadhana-shop-cache-v1'
+function readCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY))
+    return cached?.mode === mode ? cached.raw : null
+  } catch {
+    return null
+  }
+}
+function writeCache(raw) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ mode, raw }))
+  } catch {
+    // storage full or blocked: just no instant start next time
+  }
+}
+
+// Nothing to show yet (first visit): empty lists, so pages show loading placeholders
+const emptyData = { ...seedData, bouquets: [], flowers: [], allFlowers: [], wrappers: [], addOns: [] }
+
+function initialState() {
+  const cached = readCache()
+  return cached ? { data: shape(cached), ready: true } : { data: emptyData, ready: false }
+}
+
+const ShopDataContext = createContext({ ...seedData, ready: true, loading: false })
 
 export function ShopDataProvider({ children }) {
-  const [data, setData] = useState(seedData)
+  const [{ data, ready }, setState] = useState(initialState)
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
     try {
-      setData(shape(await loadAll()))
+      const raw = await loadAll()
+      writeCache(raw)
+      setState({ data: shape(raw), ready: true })
     } catch (err) {
-      console.warn('Could not load shop data, showing sample data.', err)
+      console.warn('Could not load shop data.', err)
+      // Offline on a first visit: show the samples rather than an empty shop
+      setState((s) => (s.ready ? s : { data: seedData, ready: true }))
     } finally {
       setLoading(false)
     }
@@ -44,7 +76,7 @@ export function ShopDataProvider({ children }) {
     if (data.settings?.name) document.title = data.settings.name
   }, [data.settings?.name])
 
-  return <ShopDataContext.Provider value={{ ...data, mode, loading, reload }}>{children}</ShopDataContext.Provider>
+  return <ShopDataContext.Provider value={{ ...data, mode, ready, loading, reload }}>{children}</ShopDataContext.Provider>
 }
 
 export const useShopData = () => useContext(ShopDataContext)
